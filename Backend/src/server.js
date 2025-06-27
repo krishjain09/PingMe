@@ -5,7 +5,8 @@ import mongoose from "mongoose"
 import dotenv from "dotenv";
 import cors from "cors";
 
-import { connectToSocket } from "./controllers/socketManager";
+import { connectToSocket } from "./controllers/socketManager.js";
+import router from "./routers/user.router.js";
 dotenv.config();
 
 const app = express(); // Creates an Express app instance (not an HTTP server)
@@ -17,6 +18,9 @@ app.set("PORT", (process.env.PORT || 3000));
 app.use(cors());
 app.use(express.json({limit: "40kb"}))
 app.use(express.urlencoded({limit: "40kb"}));
+
+app.use("/api/v1",router);
+
 
 server.listen(app.get("PORT"),async ()=>{
     try{
