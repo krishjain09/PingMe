@@ -12,6 +12,8 @@ import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { AuthContext } from '../context/AuthContext';
+import Snackbar from '@mui/material/Snackbar';
 
 
 
@@ -38,11 +40,36 @@ export function Authentication() {
     const [password,setPassword]=React.useState();
     const [name,setName]=React.useState();
     const [error,setError]=React.useState();
-    const [messages,setMessages]=React.useState();
+    const [message,setMessage]=React.useState();
 
     const [formState,setFormState]=React.useState(0);
     const [open,setOpen]=React.useState(false);
+    
+    const {handleRegister,handleLogin} = React.useContext(AuthContext);
 
+    let handleAuth = async ()=>{
+      try{
+          if(formState===0){
+            let result = await handleLogin(username,password);
+            console.log(result);
+          }
+
+          if(formState===1){
+            let result = await handleRegister(name,username,password);
+            console.log(result);
+            setMessage(result);
+            setOpen(true);
+            setError("");
+            setFormState(0);
+            setUsername("");
+            setPassword("");
+          }
+
+      }catch(error){
+        let message = error.response.data.message;
+        setMessage(message);
+      }
+    }
 
   return (
     <ThemeProvider theme={theme}>
@@ -107,6 +134,7 @@ export function Authentication() {
                 id="name"
                 label="Full Name"
                 name="name"
+                value={name}
                 autoComplete="name"
                 autoFocus
                 onChange={(e)=>setName(e.target.value)}
@@ -119,6 +147,7 @@ export function Authentication() {
                 id="username"
                 label="Username"
                 name="username"
+                value={username}
                 autoComplete="username"
                 autoFocus
                 onChange={(e)=>setUsername(e.target.value)}
@@ -128,29 +157,35 @@ export function Authentication() {
                 required
                 fullWidth
                 name="password"
+                value={password}
                 label="Password"
                 type="password"
                 id="password"
                 autoComplete="current-password"
                 onChange={(e)=>setPassword(e.target.value)}
               />
-              <FormControlLabel
-                control={<Checkbox value="remember" color="primary" />}
-                label="Remember me"
-              />
+              
+              <p style={{color:"red"}}>{error}</p>
+
               <Button
                 type="button"
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
+                onClick={handleAuth}
               >
-                Sign In
+              {formState===0 ? "LogIn" : "Register"}
               </Button>
               
             </Box>
           </Box>
         </Grid>
       </Grid>
+      <Snackbar
+        open={open}
+        autoHideDuration={4000}
+        message={message}
+      />
     </ThemeProvider>
   );
 }
