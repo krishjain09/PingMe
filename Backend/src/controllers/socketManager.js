@@ -1,10 +1,5 @@
 import { Server } from "socket.io";
 
-export async function connectToSocket(server){
-    const io = new Server(server);
-    return io;
-}import { Server } from "socket.io"
-
 
 let connections = {}
 let messages = {}

@@ -2,6 +2,7 @@ import { useState,useRef,useEffect } from "react";
 import "../styles/videoComponent.css"
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+
 const server_url= "http://localhost:8080";
 
 var connections = {}
@@ -118,7 +119,6 @@ export function VideoMeetComponent() {
     let getMedia = ()=>{
         setVideo(videoAvailable);
         setAudio(audioAvailable);
-
     }
 
     return (
@@ -128,7 +128,7 @@ export function VideoMeetComponent() {
                 <h2>Enter into Lobby</h2>
                 <TextField id="outlined-basic" label="Username" value={username}  onChange={(e)=>setUsername(e.target.value)} variant="outlined" />
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <Button variant="contained" onClick={conn}>Connect</Button>
+                <Button variant="contained">Connect</Button>
                 <div>
                     <video ref={localVideoRef} autoPlay muted></video>
                 </div>

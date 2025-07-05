@@ -61,13 +61,15 @@ export function Authentication() {
             setOpen(true);
             setError("");
             setFormState(0);
+            setName("");
             setUsername("");
             setPassword("");
           }
 
-      }catch(error){
-        let message = error.response.data.message;
-        setMessage(message);
+      }catch(err){
+           console.log(err);
+            let message = (err.response.data.message);
+            setError(message);
       }
     }
 
@@ -185,6 +187,7 @@ export function Authentication() {
         open={open}
         autoHideDuration={4000}
         message={message}
+        onClose={() => setOpen(false)}
       />
     </ThemeProvider>
   );
