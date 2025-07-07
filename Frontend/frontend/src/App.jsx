@@ -12,7 +12,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage/>}></Route>
         <Route path="/auth" element={<Authentication/>}></Route>
-        <Route path="/:url" element={<VideoMeetComponent/>}></Route>
+        <Route path='/:url' element={<VideoMeetComponent />} />
       </Routes>
       </AuthProvider>
     </Router>

@@ -37,6 +37,7 @@ export function AuthProvider ({children}){
 
     const handleLogin = async (username,password)=>{
         try{
+            
             let request = await client.post("/login",{
                 username,
                 password

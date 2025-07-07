@@ -1,7 +1,9 @@
 import { useState,useRef,useEffect } from "react";
-import "../styles/videoComponent.css"
+import "../styles/videoComponent.module.css"
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import { iconButtonClasses } from "@mui/material/IconButton";
+import io from "socket.io-client"
 
 const server_url= "http://localhost:8080";
 
@@ -25,7 +27,7 @@ export function VideoMeetComponent() {
   let [audioAvailable,setAudioAvailable]= useState(true);
 
   let [audio,setAudio] = useState();
-  let [video,setVideo]= useState();
+  let [video,setVideo]= useState(); 
 
   let [screen,setScreen]= useState();
 
@@ -46,7 +48,6 @@ export function VideoMeetComponent() {
   const videoRef = useRef([])
 
   let [videos,setVideos] = useState([]);
-
   let getPermissions = async () =>{
         try{
             const videoPermission = await navigator.mediaDevices.getUserMedia({video: true});
@@ -109,6 +110,108 @@ export function VideoMeetComponent() {
             }
         }
     }
+    
+    let gotMessageFromServer = (message) =>{
+
+    }
+    let addMessageToChat = (message) => {
+    }
+
+    let connectToSocketServer = () =>{
+        socketRef.current = io.connect(server_url,{secure:false});
+        console.dir(socketRef.current);
+
+        socketRef.current.on("signal",gotMessageFromServer);
+
+        socketRef.current.on("connect",()=>{
+            console.log("Connected to socket server");
+            socketRef.current.emit("join-call",window.location.href);
+            
+            socketIdRef.current = socketRef.current.id;
+            console.log("Socket ID: ",socketIdRef.current);
+            console.dir(socketRef.current);
+
+            //chat-message event is emitted when a new message is sent in the chat
+            socketRef.current.on("chat-message",addMessageToChat);
+
+
+            //user-left event is emitted when a user leaves the call
+            socketRef.current.on("user-left",(id)=>{
+                setVideo((videos)=>videos.filter((video)=>video.socketId!==id));
+            })
+
+
+            //user-joined event is emitted when a new user joins the call
+            socketRef.current.on("user-joined",(id,clients)=>{
+                //creates a new RTCPeerConnection for the new user
+                clients.forEach((socketListId)=>{
+                    connections[socketListId] = new RTCPeerConnection(peerConfigConnections);
+
+                    connections[socketListId].onicecandidate = (event) => {
+                        if(event.candidate){
+                            socketRef.current.emit("signal",socketListId,JSON.stringify({'ice': event.candidate}));
+                        }
+                    }
+
+                    //adds the local stream to the peer connection
+                    connections[socketListId].onaddstream = (event) => {
+                        let videoExists = videoRef.current.find((video) => video.socketId === socketListId);
+                        if(videoExists){
+                            
+                            setVideos(videos => {
+                                const updatedVideos = videos.map((video) => 
+                                    video.socketId === socketListId ? {...video, stream: event.stream} : video
+                            );
+                                videoRef.current = updatedVideos;
+                                return updatedVideos;
+                             })
+                        }else{
+                            let newVideo = {
+                                socketId: socketListId,
+                                stream: event.stream,
+                                playsinline: true,
+                                autoPlay: true
+                            };
+                            setVideos(videos => {
+                                const updatedVideos = [...videos, newVideo];
+                                videoRef.current = updatedVideos;
+                                return updatedVideos;
+                            });
+                        }
+                };
+            
+            if(window.localStream){
+                connections[socketListId].addStream(window.localStream);
+            }else{
+                //Todo Blacksilence 
+            }
+
+            })
+
+            if(id==socketIdRef.current){
+                console.log("You are the host of the call");
+                for(let id2 in connections){
+                    if(id2 === socketIdRef.current) continue;
+
+                    try{
+                        connections[id2].addStream(window.localStream);
+                    }catch(e) {}
+
+                    connections[id2].createOffer().then((description)=>{
+                        connections[id2].setLocalDescription(description).then(()=>{
+                            socketRef.current.emit("signal",id2,JSON.stringify({'sdp': connections[id2].description}));
+                        }).catch((e)=>{
+                            console.log("Error setting local description: ",e);
+                        })
+                    })
+                }
+            }
+
+        })
+        }
+    )}
+
+    
 
     useEffect(()=>{
         if(video !== undefined && audio!==undefined){
@@ -119,6 +222,7 @@ export function VideoMeetComponent() {
     let getMedia = ()=>{
         setVideo(videoAvailable);
         setAudio(audioAvailable);
+        connectToSocketServer();
     }
 
     return (
@@ -126,10 +230,10 @@ export function VideoMeetComponent() {
         {askForUsername===true ?
             <div>
                 <h2>Enter into Lobby</h2>
-                <TextField id="outlined-basic" label="Username" value={username}  onChange={(e)=>setUsername(e.target.value)} variant="outlined" />
+                <TextField id="outlined-basic" label="Username" value={username} onChange={e => setUsername(e.target.value)} variant="outlined" />
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <Button variant="contained">Connect</Button>
-                <div>
+                <Button variant="contained" style={{height: "56px"}} onClick={getMedia}>Connect</Button>
+                <div style={{marginTop: "50px"}}>
                     <video ref={localVideoRef} autoPlay muted></video>
                 </div>
             </div> : <></>
