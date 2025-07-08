@@ -94,10 +94,73 @@ export function VideoMeetComponent() {
         getPermissions();
     },[])
 
+    let getUserMediaSuccess = (stream) => {
+        try{
+            window.localStream.getTracks().forEach(track => track.stop());
+        }catch(e){console.log(e);}
+
+        window.localStream = stream;
+        localVideoRef.current.srcObject = stream;
+
+        for(let id in connections){
+            if(id === socketIdRef.current) continue;
+            try{
+                connections[id].addStream(window.localStream);
+            }catch(e) {console.log(e);}
+            connections[id].createOffer().then((description)=>{
+                connections[id].setLocalDescription(description).then(()=>{
+                    socketRef.current.emit("signal",id,JSON.stringify({'sdp': connections[id].description}));
+                }).catch((e)=>{
+                    console.log("Error setting local description: ",e);
+                })
+            })
+        }
+
+        stream.getTracks().forEach((track)=>track.onended = ()=>{
+            console.log("Track ended: ",track);
+            setAudio(false);
+            setVideo(false);
+            try{
+                let tracks= localVideoRef.current.srcObject.getTracks();   
+                tracks.forEach(track => track.stop());
+            }catch(e){ console.log(e);}
+
+            //Todo Blacksilence
+
+            for(let id in connections){
+                connections[id].addStream(window.localStream);
+                connections[id].createOffer().then((description)=>{
+                    connections[id].setLocalDescription(description).then(()=>{
+                        socketRef.current.emit("signal",id,JSON.stringify({'sdp': connections[id].description}));
+                    }).catch((e)=>{
+                        console.log("Error setting local description: ",e);
+                    })
+                })
+            }
+
+        })
+    }
+
+    let silence = () => {
+        let ctx = new AudioContext(); // Creates a virtual audio engine in the browser — part of Web Audio API.
+        let oscillator = ctx.createOscillator(); //Makes sound
+        let dst = oscillator.connect(ctx.createMediaStreamDestination()); //sent to another computer.
+        oscillator.start();
+        ctx.resume(); // Starts the audio context, allowing sound to be played.
+        return Object.assign(dst.stream.getAudioTracks()[0], {enabled: false}); // Returns a silent audio track
+    }
+
+    let blackScreen =({width = 640 , height = 480 }={})=>{
+        let canvas = Object.assign(document.createElement("canvas"), {width, height});
+        canvas.getContext("2d").fillRect(0, 0, width, height); // Fills the canvas with black color 
+        let stream = canvas.captureStream(); // Captures the canvas as a video stream
+        return Object.assign(stream.getVideoTracks()[0], {enabled: false}); // Returns a black video track
+    }
+
     let getUserMedia = ()=>{
         if((video && videoAvailable) || (audio && audioAvailable)){
             navigator.mediaDevices.getUserMedia({video: video, audio: audio})
-            .then(()=>{})
+            .then(getUserMediaSuccess)
             .then((stream)=>{})
             .catch((e)=>{console.log(e)});
         }
@@ -111,8 +174,23 @@ export function VideoMeetComponent() {
         }
     }
     
-    let gotMessageFromServer = (message) =>{
-
+    let gotMessageFromServer = (fromId,message) =>{
+        var signal = JSON.parse(message);
+        if(fromId !== socketIdRef.current){
+            if(signal.sdp){
+                connections[fromId].setRemoteDescription(new RTCSessionDescription(signal.sdp)).then(()=>{
+                    if(signal.sdp.type === "offer"){
+                        connections[fromId].createAnswer().then((description)=>{
+                            connections[fromId].setLocalDescription(description).then(()=>{
+                                socketRef.current.emit("signal",fromId,JSON.stringify({'sdp': connections[fromId].description}));
+                            }).catch((e)=>{
+                                console.log("Error setting local description: ",e);
+                            })
+                        })
+                    }                    
+                })
+            }
+        }
     }
     let addMessageToChat = (message) => {
     }
@@ -232,7 +310,7 @@ export function VideoMeetComponent() {
                 <h2>Enter into Lobby</h2>
                 <TextField id="outlined-basic" label="Username" value={username} onChange={e => setUsername(e.target.value)} variant="outlined" />
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <Button variant="contained" style={{height: "56px"}} onClick={getMedia}>Connect</Button>
+                <Button variant="contained" style={{height: "56px"}}>Connect</Button>
                 <div style={{marginTop: "50px"}}>
                     <video ref={localVideoRef} autoPlay muted></video>
                 </div>
