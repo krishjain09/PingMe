@@ -3,7 +3,7 @@ import { LandingPage } from "./pages/LandingPage"
 import './App.css'
 import { Authentication } from './pages/Authentication';
 import { AuthProvider } from './context/AuthContext';
-import {VideoMeetComponent} from './pages/VideoMeet';
+import {VideoMeetComponent} from './pages/VideoMeet.jsx';
 
 function App() {
   return (
