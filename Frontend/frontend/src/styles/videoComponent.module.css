@@ -6,13 +6,15 @@
 
 .meetUserVideo {
     position: absolute;
-    bottom: 5vh;
-    height: 30vh;
+    bottom: 10vh;
+    height: 25vh;
     width: auto;
-    right: 2.5vw;
+    left: 2.5vw;
     border: 3px solid rgb(3,7,61);
-    border-radius: 2.5rem;
+    border-radius: 20px;
 }
+
+
 
 .conferenceView{
     display: flex;
@@ -39,3 +41,29 @@
 .buttonContainers svg {
     font-size: 3rem;
 }
+
+
+.chatRoom { 
+    position: absolute;
+    height: 90vh;
+    right: 0;
+    width: 25vw;
+    background: white;
+    border-radius: 10px;
+    padding-inline: 10px;
+}
+
+.chatContainer{
+    position: relative;
+    height: 100%;
+}
+
+.chattingArea{
+    position: absolute;
+    bottom: 10px;
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    gap:5px;
+}
+
