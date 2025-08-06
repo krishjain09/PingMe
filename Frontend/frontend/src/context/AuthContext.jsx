@@ -52,8 +52,38 @@ export function AuthProvider ({children}){
         }
     }
 
+    const  addToUserHistory = async(meetingCode)=>{
+        try{
+            let request = await client.post("/add_to_activity",{
+                token: localStorage.getItem("token"),
+                meetingCode: meetingCode
+            });
+            if(request.status === StatusCodes.OK){
+                return request.data.message;
+            }
+        }catch(error){
+            throw error;
+        }
+    }
+
+    const getHistoryOfUser = async()=>{
+        try{
+            let request = await client.get("/get_user_history",{
+                params: {
+                    token: localStorage.getItem("token")
+                }
+            });
+            if(request.status === StatusCodes.OK){
+                return request.data.data;
+            }
+        }catch(error){
+            throw error;
+        }
+    }
+
+
     const data={
-        userData,setUserData,handleRegister,handleLogin
+        userData,setUserData,handleRegister,handleLogin,addToUserHistory,getHistoryOfUser
     }
 
     return (

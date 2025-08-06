@@ -4,6 +4,7 @@ import './App.css'
 import { Authentication } from './pages/Authentication';
 import { AuthProvider } from './context/AuthContext';
 import {VideoMeetComponent} from './pages/VideoMeet.jsx';
+import { HomeComponent } from './pages/Home.jsx';
 
 function App() {
   return (
@@ -12,6 +13,8 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage/>}></Route>
         <Route path="/auth" element={<Authentication/>}></Route>
+        <Route path="/home" element={<HomeComponent />}></Route>
+        
         <Route path='/:url' element={<VideoMeetComponent />} />
       </Routes>
       </AuthProvider>
