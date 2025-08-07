@@ -1,7 +1,5 @@
 # Ping Me - Video Conferencing Application
 
-![Logo](https://public/logo3.png)
-
 **Ping Me** is a full-stack video conferencing application built with **React**, **Node.js**, and **WebRTC**. It enables seamless video calls with features like screen sharing, real-time chat, user authentication, and meeting history.
 
 ---
