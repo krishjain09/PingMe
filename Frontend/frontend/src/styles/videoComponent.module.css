@@ -6,8 +6,8 @@
 
 .meetUserVideo {
     position: absolute;
-    bottom: 10vh;
-    height: 25vh;
+    bottom: 3vh;
+    height: 22vh;
     width: auto;
     left: 2.5vw;
     border: 3px solid rgb(3,7,61);
@@ -42,6 +42,10 @@
     font-size: 3rem;
 }
 
+.localVideoContainer{
+    margin-top: 5px;
+    margin-left: 20px;
+}
 
 .chatRoom { 
     position: absolute;

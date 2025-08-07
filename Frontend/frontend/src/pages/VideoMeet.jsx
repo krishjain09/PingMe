@@ -40,7 +40,7 @@ export function VideoMeetComponent() {
   let [audioAvailable,setAudioAvailable]= useState(true);
 
   let [audio,setAudio] = useState();
-  let [video,setVideo]= useState(); 
+  let [video,setVideo]= useState([]); 
 
   let [screen,setScreen]= useState();
 
@@ -116,17 +116,17 @@ export function VideoMeetComponent() {
         console.log(localVideoRef.current);
         localVideoRef.current.srcObject = stream;
 
-        for(let id in connections){
-            if(id === socketIdRef.current) continue;
-            try{
-                connections[id].addStream(window.localStream);
-            }catch(e) {console.log(e);}
-            connections[id].createOffer().then((description)=>{
-                connections[id].setLocalDescription(description).then(()=>{
-                    socketRef.current.emit("signal",id,JSON.stringify({'sdp': connections[id].description}));
-                }).catch((e)=>{
-                    console.log("Error setting local description: ",e);
-                })
+        for (let id in connections) {
+            if (id === socketIdRef.current) continue
+
+            connections[id].addStream(window.localStream)
+
+            connections[id].createOffer().then((description) => {
+                connections[id].setLocalDescription(description)
+                    .then(() => {
+                        socketRef.current.emit('signal', id, JSON.stringify({ 'sdp': connections[id].localDescription }))
+                    })
+                    .catch(e => console.log(e))
             })
         }
 
@@ -148,7 +148,7 @@ export function VideoMeetComponent() {
                 connections[id].addStream(window.localStream);
                 connections[id].createOffer().then((description)=>{
                     connections[id].setLocalDescription(description).then(()=>{
-                        socketRef.current.emit("signal",id,JSON.stringify({'sdp': connections[id].description}));
+                        socketRef.current.emit("signal",id,JSON.stringify({'sdp': connections[id].localDescription}));
                     }).catch((e)=>{
                         console.log("Error setting local description: ",e);
                     })
@@ -198,7 +198,7 @@ export function VideoMeetComponent() {
                     if(signal.sdp.type === "offer"){
                         connections[fromId].createAnswer().then((description)=>{
                             connections[fromId].setLocalDescription(description).then(()=>{
-                                socketRef.current.emit("signal",fromId,JSON.stringify({'sdp': connections[fromId].description}));
+                                socketRef.current.emit("signal",fromId,JSON.stringify({'sdp': connections[fromId].localDescription}));
                             }).catch((e)=>{
                                 console.log("Error setting local description: ",e);
                             })
@@ -206,8 +206,12 @@ export function VideoMeetComponent() {
                     }                    
                 })
             }
+            if (signal.ice) {
+                connections[fromId].addIceCandidate(new RTCIceCandidate(signal.ice)).catch(e => console.log(e))
+            }
         }
     }
+
     let addMessageToChat = (data,sender,socketIdSender) => {
         
         setMessages((prevmessages) => [
@@ -215,7 +219,7 @@ export function VideoMeetComponent() {
             {sender: sender, data: data}
         ]);
 
-        if(socketIdSender !== socketIdRef.current){
+        if(socketIdSender !== socketIdRef.current && showModal === false){
             setNewMessages((prevNewMessages) => prevNewMessages + 1);
         }
 
@@ -308,7 +312,7 @@ export function VideoMeetComponent() {
 
                     connections[id2].createOffer().then((description)=>{
                         connections[id2].setLocalDescription(description).then(()=>{
-                            socketRef.current.emit("signal",id2,JSON.stringify({'sdp': connections[id2].description}));
+                            socketRef.current.emit("signal",id2,JSON.stringify({'sdp': connections[id2].localDescription}));
                         }).catch((e)=>{
                             console.log("Error setting local description: ",e);
                         })
@@ -347,9 +351,9 @@ export function VideoMeetComponent() {
         setAudio(!audio);
     }
 
-    let getDisplayMediaSucess = (stream) =>{
+    let getDisplayMediaSuccess = (stream) =>{
         try{
-            windows.localStream.getTracks().forEach(track => track.stop());
+            window.localStream.getTracks().forEach(track => track.stop());
         }catch(e){console.log(e);}
 
         window.localStream = stream;
@@ -362,7 +366,7 @@ export function VideoMeetComponent() {
             }catch(e) {console.log(e);}
             connections[id].createOffer().then((description)=>{
                 connections[id].setLocalDescription(description).then(()=>{
-                    socketRef.current.emit("signal",id,JSON.stringify({'sdp': connections[id].description}));
+                    socketRef.current.emit("signal",id,JSON.stringify({'sdp': connections[id].localDescription}));
                 }).catch((e)=>{
                     console.log("Error setting local description: ",e);
                 })
@@ -390,7 +394,7 @@ export function VideoMeetComponent() {
         if(screen){
             if(navigator.mediaDevices.getDisplayMedia){
                 navigator.mediaDevices.getDisplayMedia({audio: true, video: true})
-                .then(getDisplayMediaSucess)
+                .then(getDisplayMediaSuccess)
                 .then((stream)=>{})
                 .catch((error)=>{console.log(error)})
             }
@@ -424,21 +428,27 @@ export function VideoMeetComponent() {
         routeTo("/home");
     }
 
+    let handleChatClick = () => {
+        const newState = !showModal;
+        setShowModal(newState);
+
+        if (newState === true) {
+            setNewMessages(0);
+        }
+    }
+
     return (
         <div>
 
             {askForUsername === true ?
 
                 <div>
-
-
-                    <h2>Enter into Lobby </h2>
-                    <TextField id="outlined-basic" label="Username" value={username} onChange={e => setUsername(e.target.value)} variant="outlined" />
-                    <Button variant="contained" onClick={connect}>Connect</Button>
-
-
-                    <div>
-                        <video ref={localVideoRef} autoPlay muted></video>
+                    <h2 style={{margin:"20px"}}>Enter into Lobby </h2>
+                    <TextField id="outlined-basic" label="Username" value={username} onChange={e => setUsername(e.target.value)} onKeyDown={(e)=>{if(e.key === "Enter"){connect()}}} variant="outlined" style={{margin:"20px", width:"32em"}} />
+                    <Button variant="contained" onClick={connect} style={{height: "56px", marginInline: "5px", margin:"20px"}} >Connect</Button>
+                    
+                    <div className={styles.localVideoContainer}>
+                        <video ref={localVideoRef} autoPlay muted ></video>
                     </div>
 
                 </div> :
@@ -451,7 +461,7 @@ export function VideoMeetComponent() {
                         <div className={styles.chatRoom}>
                             <div className={styles.chatContainer}>
                                 <h1>Chat</h1>
-
+                            
                                 <div className={styles.chattingDisplay}>
 
                                     {messages.length !== 0 ? messages.map((item, index) => {
@@ -495,7 +505,7 @@ export function VideoMeetComponent() {
                             </IconButton> : <></>}
 
                         <Badge badgeContent={newMessages} max={999} color='orange'>
-                            <IconButton onClick={()=>{setShowModal(!showModal)}} style={{ color: "white" }}>
+                            <IconButton onClick={handleChatClick} style={{ color: "white" }}>
                                 <ChatIcon />
                             </IconButton>
                         </Badge>

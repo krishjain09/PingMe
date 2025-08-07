@@ -59,7 +59,7 @@ export function AuthProvider ({children}){
                 meetingCode: meetingCode
             });
             if(request.status === StatusCodes.OK){
-                return request.data.message;
+                return request;
             }
         }catch(error){
             throw error;
@@ -68,13 +68,13 @@ export function AuthProvider ({children}){
 
     const getHistoryOfUser = async()=>{
         try{
-            let request = await client.get("/get_user_history",{
+            let request = await client.get("/get_all_activity",{
                 params: {
                     token: localStorage.getItem("token")
                 }
             });
             if(request.status === StatusCodes.OK){
-                return request.data.data;
+                return request.data;
             }
         }catch(error){
             throw error;

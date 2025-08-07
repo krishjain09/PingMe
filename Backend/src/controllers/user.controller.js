@@ -103,7 +103,7 @@ export async function getUserHistory(req,res){
             success: false
         });
     }
-    const meetings = await Meeting.findOne({user_id: user.username});
+    const meetings = await Meeting.find({user_id: user.username});
     if(!meetings){
         return res.status(StatusCodes.NOT_FOUND).json({
             message: "No meetings found for this user",

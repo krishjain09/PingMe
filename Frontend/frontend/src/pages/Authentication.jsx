@@ -165,6 +165,7 @@ export function Authentication() {
                 id="password"
                 autoComplete="current-password"
                 onChange={(e)=>setPassword(e.target.value)}
+                onKeyDown={(e)=>{if(e.key === "Enter"){handleAuth()}}}
               />
               
               <p style={{color:"red"}}>{error}</p>
@@ -175,6 +176,7 @@ export function Authentication() {
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
                 onClick={handleAuth}
+
               >
               {formState===0 ? "LogIn" : "Register"}
               </Button>

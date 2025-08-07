@@ -1,6 +1,9 @@
+import { use } from "react";
 import "../App.css"
-import { Link } from "react-router-dom";
+import { Link , useNavigate} from "react-router-dom";
+
 export function LandingPage(){
+    const router = useNavigate();
     return (
         <div className="landingPageContainer">
             <nav>
@@ -8,9 +11,13 @@ export function LandingPage(){
                     <h2>Ping Me</h2>
                 </div>
                 <div className="navlist">
-                    <p>Join as a guest</p>
-                    <p>Register</p>
-                    <div role="button">
+                    <p onClick={() => router('/home')}>
+                        Join as a guest
+                    </p>
+                    <p onClick={() => router('/auth')}>
+                        Register
+                    </p>
+                    <div role="button" onClick={() => router('/auth')}>
                         <p>Login</p>
                     </div>
                 </div>

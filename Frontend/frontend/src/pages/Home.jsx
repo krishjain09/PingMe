@@ -26,7 +26,7 @@ export function HomeComponent() {
         </div>
         <div style={{display:'flex', alignItems: 'center'}}>
           <div style={{display: 'flex', textAlign: 'center'}}>
-            <IconButton>
+            <IconButton onClick={() => navigate("/history")}>
               <RestoreIcon/>
             </IconButton>
             <p style={{paddingTop:'7px'}}>History</p>
@@ -45,7 +45,7 @@ export function HomeComponent() {
         <div>
           <h2>Providing Quality Video Call Just Like Quality Education</h2>
           <div style={{display:'flex',gap: '10px'}}>
-            <TextField onChange={(e) => setMeetingCode(e.target.value)} variant='outlined' id='outlined-basic' label="Meeting Code"></TextField>
+            <TextField onChange={(e) => setMeetingCode(e.target.value)} onKeyDown={(e)=>{if(e.key === "Enter"){handleJoinVideoMeet()}}} variant='outlined' id='outlined-basic' label="Meeting Code"></TextField>
             <Button variant='contained' onClick={handleJoinVideoMeet} style={{marginLeft: '10px'}}>Join</Button>
           </div>
         </div>
