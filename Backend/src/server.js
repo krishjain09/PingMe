@@ -15,7 +15,12 @@ const io = connectToSocket(server); // Passes the HTTP server to socket.io
 
 app.set("PORT", (process.env.PORT || 3000));
 
-app.use(cors());
+app.use(cors({
+    origin: 'https://pingmefrontend.onrender.com',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+}));
+
 app.use(express.json({limit: "40kb"}))
 app.use(express.urlencoded({limit: "40kb"}));
 

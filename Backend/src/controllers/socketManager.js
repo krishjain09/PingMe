@@ -8,9 +8,8 @@ let timeOnline = {}
 export const connectToSocket = (server) => {
     const io = new Server(server, {
         cors: {
-            origin: "*",
-            methods: ["GET", "POST"],
-            allowedHeaders: ["*"],
+            origin: 'https://pingmefrontend.onrender.com',
+            methods: ['GET', 'POST', 'PUT', 'DELETE'],
             credentials: true
         }
     });
