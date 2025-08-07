@@ -220,7 +220,7 @@ export function VideoMeetComponent() {
             {sender: sender, data: data}
         ]);
 
-        if(socketIdSender !== socketIdRef.current && showModal === false){
+        if(socketIdSender !== socketIdRef.current){
             setNewMessages((prevNewMessages) => prevNewMessages + 1);
         }
 
@@ -432,8 +432,7 @@ export function VideoMeetComponent() {
     let handleChatClick = () => {
         const newState = !showModal;
         setShowModal(newState);
-
-        if (newState === true) {
+        if (newState) {
             setNewMessages(0);
         }
     }
@@ -480,7 +479,7 @@ export function VideoMeetComponent() {
 
 
                                 <div className={styles.chattingArea}>
-                                    <TextField value={message} onChange={(e)=>setMessage(e.target.value)} label="Enter your message" variant="outlined"  style={{width: "17rem"}}/>
+                                    <TextField value={message} onChange={(e)=>setMessage(e.target.value)} label="Enter your message" variant="outlined"  style={{width: "17rem"}} onKeyDown={(e)=>{if(e.key === "Enter"){sendMessage()}}}/>
                                     <Button type="submit" variant="contained" onClick={sendMessage}>Send</Button>
                                 </div>
                             </div>
@@ -505,11 +504,21 @@ export function VideoMeetComponent() {
                                 {screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
                             </IconButton> : <></>}
 
-                        <Badge badgeContent={newMessages} max={999} color='orange'>
-                            <IconButton onClick={handleChatClick} style={{ color: "white" }}>
-                                <ChatIcon />
-                            </IconButton>
-                        </Badge>
+                            <Badge 
+                                badgeContent={!showModal ? newMessages : 0} 
+                                max={999} 
+                                sx={{ 
+                                    "& .MuiBadge-badge": {
+                                    backgroundColor: "red",
+                                    color: "white", // This changes the text color to blue
+                                    fontWeight: "bold" // Optional: makes the number bold
+                                    }
+                                }}
+                                >
+                                <IconButton onClick={handleChatClick} style={{ color: "white" }}>
+                                    <ChatIcon />
+                                </IconButton>
+                            </Badge>
 
                     </div>
 
